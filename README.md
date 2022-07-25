@@ -1,2 +1,3 @@
 # Exploring-Stuff
-Exploring new concepts
+Consists of:
+  1. Wave Function Collapse - WFC
