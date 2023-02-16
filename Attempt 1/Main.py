@@ -5,12 +5,15 @@ import matplotlib.pyplot as plt
 from SocketClass import MeshInfo
 import random
 
-inp_img = cv2.imread('Tile.png')
+
+
+
+inp_img = cv2.imread('Tile3.png')
 
 # Variables
 block_size = 30
 size_tset = [int(inp_img.shape[0]/block_size)-1, int(inp_img.shape[1]/block_size)-1]
-map_size = [10,10]
+map_size = [5,5]
 Map = np.full((map_size[0],map_size[1]),-1).tolist()
 sockets = np.full((map_size[0], map_size[1], 12), -1, dtype=int).tolist()
 
@@ -19,7 +22,7 @@ prototypes = {}
 
 # Extracting tiles from input (inp_img)
 l = []
-for i in range(0, inp_img.shape[0]-block_size, block_size):
+for i in range(0, inp_img.shape[0], block_size):
     for j in range(0, inp_img.shape[1]-block_size, block_size):
         l.append(inp_img[i:i+block_size,j:j+block_size])
 
@@ -107,43 +110,47 @@ for i in range(size_tset[0]):
             prototypes[count] = MeshInfo(socket, rot, l[i*size_tset[0]+j])
             count+=1
 
-print(f"{len(prototypes)=}")
+print(f"{size_tset=}")
 #subplot(r,c) provide the no. of rows and columns
-f, axarr = plt.subplots(5,5) 
-
-# use the created array to output your multiple images
+f, axarr = plt.subplots(size_tset[0],size_tset[1]) 
+plt.subplots_adjust(wspace=0,hspace=0)
+#use the created array to output your multiple images
 for i in range(size_tset[0]):
     for j in range(size_tset[1]):
         axarr[i,j].imshow(l[i*size_tset[0]+j], interpolation='none')
+        plt.axis('off')
 plt.show()
+
 
 x = list(prototypes.keys())
 candidates = np.full((map_size[0], map_size[1], len(x)), x, dtype=int).tolist()
 
 def MinEntropy():
-    #Getting least entropy length
-    min_entropy = len(x)
-    max_entropy = min_entropy-1
-    for i in range(len(candidates)):
-        for j in range(len(candidates[0])):
-                if len(candidates[i][j]) < min_entropy and len(candidates[i][j]) > 1:
-                    min_entropy = len(candidates[i][j])
-                if len(candidates[i][j]) > max_entropy:
-                    max_entropy = len(candidates[i][j])
-    #If maximum entropy (possibilites) is 1, then return -1
-    if max_entropy == 1:
-        return -1
 
-    #Looking for first cell with minimum entropy
-    for i in range(len(candidates)):
-        for j in range(len(candidates[0])):
+    min_entropy = len(list(prototypes.keys()))
+    chosen_cell = -1
+    #Checking minimum entropy value
+    for i in range(map_size[0]):
+        for j in range(map_size[1]):
+            if min_entropy > len(candidates[i][j]) and len(candidates[i][j]) > 1:
+                min_entropy = len(candidates[i][j])
+                print("hit minimum at ", i, j)
+
+    for i in range(map_size[0]):
+        for j in range(map_size[1]):
             if len(candidates[i][j]) == min_entropy:
-                return (i,j)
-    return -1
+                chosen_cell = [i,j]
+                break
+    print
+    return chosen_cell
+
 
 def ChooseRandomTile(c_cell : list):
     choice = random.choice(candidates[c_cell[0]][c_cell[1]])
-    candidates[c_cell[0]][c_cell[1]], Map[c_cell[0]][c_cell[1]] = [choice], choice
+    candidates[c_cell[0]][c_cell[1]], Map[c_cell[0]][c_cell[1]] = [choice,], choice
+    print("UPDATE:")
+    for i in range(map_size[0]):
+        print(Map[i])
     print(f"Random Choice for {c_cell[0]},{c_cell[1]}: {choice}")
 
 def UpdateCurrentCellSockets(c_cell : list):
@@ -203,9 +210,19 @@ def UpdateNeighborCells(c_cell : list, n_cells : list):
     #if they do, add it to new candidates 
 
     for i in range(len(n_cells)):
-        if n_cells ==-1:
+        if n_cells[i] ==-1:
             continue
-        
+        x,y = n_cells[i]
+        c_cell_sockets = prototypes[Map[c_cell[0]][c_cell[1]]].sockets[(0+i*3)%12:(3+i*3)%12][::-1]
+        if c_cell_sockets == [-1,-1,-1]:
+            continue
+        new_candidates = []
+        for cand in candidates[x][y]:
+            if prototypes[cand].sockets[(6+i*3)%12:(9+i*3)%12] == c_cell_sockets:
+                new_candidates.append(cand)
+
+        candidates[x][y] = new_candidates
+        print(candidates[x][y])
     return
 
 def epoch():
@@ -223,4 +240,23 @@ def epoch():
     # Eliminate Neighbor Cells
     UpdateNeighborCells(c_cell, n_cells)
         
+    epoch()
 epoch()
+
+for i in range(map_size[0]):
+    print(Map[i])
+
+def ImageGrid():
+    fig = plt.figure(figsize=(map_size[0], map_size[1]))
+    fig.subplots_adjust(wspace=0,hspace=0)
+    x,y=map_size
+    for i in range(x):
+        for j in range(y):
+            if Map[i][j] == -1:
+                continue
+            fig.add_subplot(x,y,i*map_size[0]+j+1)
+            plt.imshow(prototypes[Map[i][j]].Img())
+            plt.axis('off')
+
+    plt.show()
+ImageGrid()
