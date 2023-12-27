@@ -1,2 +1,5 @@
 WFC_venv
 *.pyc
+C_stuff/test.c
+C_stuff/HowTo.md
+C_stuff/output.exe
