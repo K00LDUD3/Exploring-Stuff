@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <math.h>
-// #define randnum(min, max) \
-//     ((rand() % (int)(((max) + 1) - (min))) + (min))
+#include <time.h>
 
 void Free(float **mat, int R)
 {
@@ -14,6 +13,16 @@ void Free(float **mat, int R)
         free(mat[i]);
     }
     free(mat);
+}
+
+void Log(double error, int epoch)
+{
+    FILE *file = fopen("count.txt", "r");
+    char line[32];
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        printf("%s", line);
+    }
 }
 
 float **Transpose(float **mat, int R, int C)
@@ -38,7 +47,7 @@ float **Multiply(float **mat1, float **mat2, int R1, int C1, int R2, int C2)
 {
     const int R = R1, C = C2;
     float **resultant = (float **)malloc(R * sizeof(float *));
-    printf("\nResultant Dimensions: %dx%d\n", R, C);
+    // printf("\nResultant Dimensions: %dx%d\n", R, C);
     for (int i = 0; i < R; i++)
     {
         *(resultant + i) = calloc(C, sizeof(float));
@@ -294,15 +303,30 @@ float *WeightCorrection(float stepSize, float **weights, float *y, float **y_pre
             *(weight_correction + col) += -2 * (*(*(X + i) + col)) * ((*(y + i)) - (*(*(y_pred + i))));
         }
         *(weight_correction + col) /= numXRows / stepSize;
-        printf("Weight derivative for \'%d\'th weight: %f\n", col, *(weight_correction + col));
+        // printf("Weight derivative for \'%d\'th weight: %f\n", col, *(weight_correction + col));
     }
 
     return weight_correction;
 }
+float R_Squared(float *y, float **y_pred, int rows)
+{
+    float tss = 0;
+    float y_mean = 0;
+    for (int i = 0; i < rows; i++)
+    {
+        y_mean += y[i] / rows;
+    }
+    for (int i = 0; i < rows; i++)
+    {
+        tss += (y[i] - y_mean) * (y[i] - y_mean);
+    }
+    float rss = rows * MeanSquaredError(y, y_pred, rows);
 
+    return 1 - rss / tss;
+}
 void Epoch(float **weights, float *bias, float stepSize, float **X, float *y, int numXRows, int numXCols, float **y_pred, int *count)
 {
-    printf("\n============== [START] Epoch %d ==============\n", *count);
+    // printf("\n============== [START] Epoch %d ==============\n", *count);
 
     int numWeightRows = numXCols;
     y_pred = Multiply(X, weights, numXRows, numXCols, numWeightRows, 1);
@@ -310,26 +334,26 @@ void Epoch(float **weights, float *bias, float stepSize, float **X, float *y, in
     // displayMatrix(y_pred, numXRows, 1, "Resultant:");
 
     float error = MeanSquaredError(y, y_pred, numXRows);
-    printf("\nError <MSE>: %f\n", error);
-
+    printf("\nEpoch %d Error <MSE>: %f\n", *count, error);
+    printf("R_squared Value: %f", R_Squared(y, y_pred, numXRows));
     float biasCorrection = DerivativeBias(y, y_pred, numXRows, stepSize, *bias);
-    printf("\nBias Derivative: %f\n", biasCorrection);
+    // printf("\nBias Derivative: %f\n", biasCorrection);
 
     float *weightCorrection = WeightCorrection(stepSize, weights, y, y_pred, numXRows, numXCols, X);
 
     for (int i = 0; i < numXCols; i++)
     {
-        printf("\n%f\n", *(weightCorrection + i));
+        // printf("\n%f\n", *(weightCorrection + i));
         *(*(weights + i)) -= *(weightCorrection + i);
     }
 
     *bias -= biasCorrection;
 
-    printf("\n============== [END] Epoch ====================\n");
+    // printf("\n============== [END] Epoch ====================\n");
 
-    printf("\nBias: %f\n", *bias);
-    displayMatrix(weights, numWeightRows, 1, "Weights: ");
-    printf("\n");
+    // printf("\nBias: %f\n", *bias);
+    // displayMatrix(weights, numWeightRows, 1, "Weights: ");
+    // printf("\n");
     *count += 1;
 
     return;
@@ -343,14 +367,14 @@ int main()
 
     // Getting full csv file
     float **file_matrix = Create(filename, &numRows, &numCols, false);
-    displayMatrix(file_matrix, numRows, numCols, filename);
+    // displayMatrix(file_matrix, numRows, numCols, filename);
 
     // Getting X matrix and y vector
     float **X = malloc((numRows - 1) * sizeof(float *));
     float *y = calloc(numRows, sizeof(float));
     SplitXY(file_matrix, X, y, numRows, numCols);
-    displayVector(y, numRows, "Y VALUES:");
-    displayMatrix(X, numRows, numCols - 1, "X VALUES:");
+    // displayVector(y, numRows, "Y VALUES:");
+    // displayMatrix(X, numRows, numCols - 1, "X VALUES:");
 
     // Weights
     int numWeightRows = numCols - 1;
@@ -364,7 +388,7 @@ int main()
             *(*(initial_weights + i) + j) = *(*(weights + i) + j);
         }
     }
-    displayMatrix(weights, numWeightRows, 1, "Weights:");
+    // displayMatrix(weights, numWeightRows, 1, "Weights:");
 
     // Bias
     float bias = randVal(0, 10);
@@ -383,7 +407,9 @@ int main()
         Epoch(weights, &bias, stepSize, X, y, numRows, numCols - 1, resultant, &count);
     }
 
-    printf("\nInitial Coefficients:");
+    Log(1.111, 1);
+
+    printf("\n\n\n\n\n\nInitial Coefficients:");
     displayMatrix(initial_weights, numCols - 1, 1, "_");
     printf("\nFinal Coefficients:");
     displayMatrix(weights, numCols - 1, 1, "_");

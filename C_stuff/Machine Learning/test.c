@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 void display(double **arr, int *dims, int num_dims)
 {
     if (num_dims == 1)
@@ -52,7 +53,7 @@ int main()
         {
             // printf("[%d,%d]: ", i, j);
             // scanf("%lf", &mat1[i][j]);
-            *(*(mat1 + i) + j) = (double*) calloc(D1,sizeof(double));
+            *(*(mat1 + i) + j) = (double *)calloc(D1, sizeof(double));
         }
     }
     printf("\n");
