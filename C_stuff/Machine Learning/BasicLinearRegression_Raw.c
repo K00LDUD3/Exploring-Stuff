@@ -6,6 +6,10 @@
 #include <math.h>
 #include <time.h>
 
+
+const char *FILENAME = "Numbers2.csv";
+
+
 void Free(float **mat, int R)
 {
     for (int i = 0; i < R; i++)
@@ -362,12 +366,11 @@ void Epoch(float **weights, float *bias, float stepSize, float **X, float *y, in
 int main()
 {
     srand((unsigned int)time(NULL));
-    const char *filename = "Numbers2.csv";
     int numRows, numCols;
 
     // Getting full csv file
-    float **file_matrix = Create(filename, &numRows, &numCols, false);
-    // displayMatrix(file_matrix, numRows, numCols, filename);
+    float **file_matrix = Create(FILENAME, &numRows, &numCols, false);
+    // displayMatrix(file_matrix, numRows, numCols, FILENAME);
 
     // Getting X matrix and y vector
     float **X = malloc((numRows - 1) * sizeof(float *));
