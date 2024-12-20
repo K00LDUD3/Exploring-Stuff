@@ -1,0 +1,11 @@
+#img1{
+    float: left;
+    margin-right: 50px;
+}
+
+div{
+    border: 2px solid  ;
+    height: 75px;
+    font-size: 1.2em;
+    overflow: auto;
+}

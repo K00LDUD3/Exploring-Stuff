@@ -1,0 +1,13 @@
+.box{
+    border: 2px solid;
+    height: auto;
+    width: 50%;
+    box-sizing: border-box;
+    padding: 25px;
+    float:right;
+}
+
+/* orrrr */
+* {
+    box-sizing: border-box;
+}

@@ -1,0 +1,20 @@
+
+body {
+background-color: rgb(255, 255, 255);
+}
+h1 {
+color: rgb(148, 148, 148);
+font-family: Verdana, aerial;
+text-align: center;
+text-shadow: -5px 5px 5px rgb(151, 151, 151);
+}
+p{
+    font-family: "courier new","lucida console";
+    font-size: 1.5em;
+    border-bottom: 3px solid rgb(224, 224, 224);
+    border-top: 3px solid rgba(224, 224, 224, 0.392);
+    border-left: 3px solid rgba(224, 224, 224, 0.392);
+    border-right: 3px solid rgba(224, 224, 224, 0.392) ;
+    border-radius: 10px;
+    border-spacing: 6px;
+}
