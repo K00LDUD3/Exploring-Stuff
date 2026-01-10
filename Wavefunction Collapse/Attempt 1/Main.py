@@ -8,12 +8,12 @@ import random
 
 
 
-inp_img = cv2.imread('Tile3.png')
+inp_img = cv2.imread('Tile4.png')
 
 # Variables
 block_size = 30
 size_tset = [int(inp_img.shape[0]/block_size)-1, int(inp_img.shape[1]/block_size)-1]
-map_size = [5,5]
+map_size = [10,10]
 Map = np.full((map_size[0],map_size[1]),-1).tolist()
 sockets = np.full((map_size[0], map_size[1], 12), -1, dtype=int).tolist()
 
@@ -259,4 +259,37 @@ def ImageGrid():
             plt.axis('off')
 
     plt.show()
-ImageGrid()
+# ImageGrid()
+
+def StitchFinalMap():
+    tile_h, tile_w, _ = prototypes[next(iter(prototypes))].Img().shape
+    H, W = map_size
+
+    stitched = np.zeros((H * tile_h, W * tile_w, 3), dtype=np.uint8)
+
+    for i in range(H):
+        for j in range(W):
+            tile_idx = Map[i][j]
+            if tile_idx == -1:
+                continue
+
+            tile_img = prototypes[tile_idx].Img()
+
+            y0 = i * tile_h
+            y1 = y0 + tile_h
+            x0 = j * tile_w
+            x1 = x0 + tile_w
+
+            stitched[y0:y1, x0:x1] = tile_img
+
+    return stitched
+
+final_img = StitchFinalMap()
+
+# matplotlib uses RGB, OpenCV expects BGR
+final_img_bgr = cv2.cvtColor(final_img, cv2.COLOR_RGB2BGR)
+
+cv2.imwrite("wfc_output.png", final_img_bgr)
+print("Saved stitched WFC image as wfc_output.png")
+
+
