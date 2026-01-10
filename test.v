@@ -1,7 +1,0 @@
-module test #(
-    
-) (
-    ports
-);
-    
-endmodule
